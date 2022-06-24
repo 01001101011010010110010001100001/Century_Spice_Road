@@ -97,7 +97,7 @@ def get_list_action(state):
 
 @jit(nopython=True)
 def check_win(env_state):
-    win = 4
+    win = 0
     max = 0
     end = -1
     for nguoichoi in range(5):
@@ -332,11 +332,29 @@ def one_game(list_player,file_per):
     while check_win(env_state) == -1:
         current_player = env_state[255]%5
         state = env_to_player(env_state)
-        action,file_temp,file_per = list_player[current_player](state,file_temp,file_per)
+        # print(file_temp,current_player)
+        action,file_temp[current_player],file_per = list_player[current_player](state,file_temp[current_player],file_per)
         env_state = environment(env_state,action)
         turn += 1
     return check_win(env_state),file_per,turn
 
+def check_victory(state):
+    win = 0
+    max = 0
+    end = -1
+    for nguoichoi in range(5):
+        if state[nguoichoi*51 + 4] == 5:
+            end = 1
+        if state[nguoichoi*51 +5] > max:
+            max = state[nguoichoi*51 +5]
+            win = nguoichoi
+    if end > 0:
+        if win == 0:
+            return 1
+        else:
+            return 0
+    else:
+        return -1
 
 # @jit(nopython=True)
 def player_random0(state,file_temp,file_per):
@@ -353,7 +371,7 @@ def normal_main(list_player,times,print_mode):
         shuffled_players = [list_player[list_randomed[0]],list_player[list_randomed[1]],list_player[list_randomed[2]],list_player[list_randomed[3]],list_player[list_randomed[4]]]
         state = reset()
         win,file_per,turn = one_game(shuffled_players,file_per)
-        print(turn)
+        # print(turn)
         real_winner = list_randomed[win]
         count[real_winner] += 1
     return count,file_per
