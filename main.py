@@ -2,7 +2,7 @@ import numpy as np
 import numpy.random as rd
 import random
 from numba import vectorize, jit, cuda, float64
-
+np.seterr(all='ignore')
 # khởi tạo bàn chơi
 @jit(nopython=True)
 def reset():
@@ -51,6 +51,9 @@ def env_to_player(env_state):
 
 @jit(nopython=True)
 def get_list_action(state):
+    #phase = 10 là end game
+    if state[256] == 10:
+        return np.array([65])
     #phase = 0 là trạng thái bình thường
     if state[256] == 0:
         # tạo action 64 mặc định là nghỉ
@@ -335,14 +338,19 @@ def one_game(list_player,file_per):
         # print(file_temp,current_player)
         action,file_temp[current_player],file_per = list_player[current_player](state,file_temp[current_player],file_per)
         env_state = environment(env_state,action)
-        turn += 1
-    return check_win(env_state),file_per,turn
+    env_state[256] = 10
+    for turn_bonus in range(5):
+        env_state[255] += 1
+        state = env_to_player(env_state)
+        action,file_temp[current_player],file_per = list_player[current_player](state,file_temp[current_player],file_per)
+    return check_win(env_state),file_per
 
 def check_victory(state):
     win = 0
     max = 0
     end = -1
     for nguoichoi in range(5):
+        # print(state[nguoichoi*51 + 4],state[nguoichoi*51 + 5])
         if state[nguoichoi*51 + 4] == 5:
             end = 1
         if state[nguoichoi*51 +5] > max:
@@ -370,7 +378,7 @@ def normal_main(list_player,times,print_mode):
         rd.shuffle(list_randomed)
         shuffled_players = [list_player[list_randomed[0]],list_player[list_randomed[1]],list_player[list_randomed[2]],list_player[list_randomed[3]],list_player[list_randomed[4]]]
         state = reset()
-        win,file_per,turn = one_game(shuffled_players,file_per)
+        win,file_per = one_game(shuffled_players,file_per)
         # print(turn)
         real_winner = list_randomed[win]
         count[real_winner] += 1
