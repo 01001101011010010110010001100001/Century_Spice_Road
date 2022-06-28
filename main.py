@@ -332,12 +332,13 @@ def one_game(list_player,file_per):
     env_state = reset()
     file_temp = [[],[],[],[],[]]
     turn = 0
-    while check_win(env_state) == -1:
+    while check_win(env_state) == -1 and turn < 3000:
         current_player = env_state[255]%5
         state = env_to_player(env_state)
         # print(file_temp,current_player)
         action,file_temp[current_player],file_per = list_player[current_player](state,file_temp[current_player],file_per)
         env_state = environment(env_state,action)
+        turn += 1
     env_state[256] = 10
     for turn_bonus in range(5):
         env_state[255] += 1
