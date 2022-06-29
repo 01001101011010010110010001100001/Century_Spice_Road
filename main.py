@@ -2,7 +2,7 @@ import numpy as np
 import numpy.random as rd
 import random
 from numba import vectorize, jit, cuda, float64
-np.seterr(all='ignore')
+
 # khởi tạo bàn chơi
 @jit(nopython=True)
 def reset():
@@ -332,18 +332,21 @@ def one_game(list_player,file_per):
     env_state = reset()
     file_temp = [[],[],[],[],[]]
     turn = 0
-    while check_win(env_state) == -1 and turn < 10000:
+    while check_win(env_state) == -1:
         current_player = env_state[255]%5
         state = env_to_player(env_state)
         # print(file_temp,current_player)
         action,file_temp[current_player],file_per = list_player[current_player](state,file_temp[current_player],file_per)
         env_state = environment(env_state,action)
         turn += 1
-    env_state[256] = 10
     for turn_bonus in range(5):
         env_state[255] += 1
+        current_player = env_state[255]%5
         state = env_to_player(env_state)
+        # print("người chơi",current_player,"check victory",check_victory(state))
+        # print("hệ thống check win",check_win(env_state))
         action,file_temp[current_player],file_per = list_player[current_player](state,file_temp[current_player],file_per)
+    # print("hết ván")
     return check_win(env_state),file_per
 
 def check_victory(state):
@@ -351,7 +354,6 @@ def check_victory(state):
     max = 0
     end = -1
     for nguoichoi in range(5):
-        # print(state[nguoichoi*51 + 4],state[nguoichoi*51 + 5])
         if state[nguoichoi*51 + 4] == 5:
             end = 1
         if state[nguoichoi*51 +5] > max:
@@ -368,8 +370,8 @@ def check_victory(state):
 # @jit(nopython=True)
 def player_random0(state,file_temp,file_per):
     a = get_list_action(state)
-    b = random.choice(a)
-    return b,file_temp,file_per
+    b = random.randrange(len(a))
+    return a[b],file_temp,file_per
 
 def normal_main(list_player,times,print_mode):
     count = [0,0,0,0,0]
