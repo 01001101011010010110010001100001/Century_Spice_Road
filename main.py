@@ -350,7 +350,7 @@ def one_game(list_player,file_per):
     return check_win(env_state),file_per
 
 def check_victory(state):
-    win = 0
+    win = -1
     max = 0
     end = -1
     for nguoichoi in range(5):
@@ -375,7 +375,7 @@ def player_random0(state,file_temp,file_per):
 
 def normal_main(list_player,times,print_mode):
     count = [0,0,0,0,0]
-    file_per = []
+    file_per = [0]
     list_randomed = [0,1,2,3,4]
     for van in range(times):
         rd.shuffle(list_randomed)
